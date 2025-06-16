@@ -20,3 +20,4 @@ build-backend = "pdm.backend"
 
 [tool.pdm]
 distribution = true
+version = { source = "file", path = "py_spring_scheduler/__init__.py" }

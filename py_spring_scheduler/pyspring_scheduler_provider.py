@@ -4,7 +4,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from loguru import logger
 from py_spring_core import Component, EntityProvider, Properties
 
-from pyspring_scheduler._schedule import JobRegistry, ScheduledJob
+from py_spring_scheduler._schedule import JobRegistry, ScheduledJob
 
 
 class SchedulerProperties(Properties):
