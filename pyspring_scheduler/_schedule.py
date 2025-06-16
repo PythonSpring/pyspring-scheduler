@@ -54,6 +54,5 @@ def Scheduled(trigger: BaseTrigger) -> Callable[[Callable], Callable]:
         )
         if job not in JobRegistry.jobs:
             JobRegistry.jobs.add(job)
-        breakpoint()
         return wrapper
     return decorator
