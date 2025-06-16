@@ -1,5 +1,5 @@
 [project]
-name = "pyspring-scheduler"
+name = "py_spring_scheduler"
 version = "0.0.1"
 description = "Default template for PDM package"
 authors = [
