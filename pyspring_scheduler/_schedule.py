@@ -10,6 +10,7 @@ class ScheduledJob(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
     trigger: BaseTrigger
     class_name: str
+    module_name: str
     full_name: str
     func: Callable[..., Any]
     is_regular_function: bool
@@ -39,16 +40,20 @@ def Scheduled(trigger: BaseTrigger) -> Callable[[Callable], Callable]:
             class_name = func_repr[0]
             is_regular_function = False
 
-        logger.info(f"Scheduling job {func.__name__} with trigger {trigger}")
+        module_name = func.__module__
+        full_name = f"{module_name}.{class_name}.{func.__name__}" if class_name else f"{module_name}.{func.__name__}"
+
+        logger.info(f"Scheduling job {full_name} with trigger {trigger}")
         job = ScheduledJob(
             trigger=trigger, 
-            class_name=class_name, 
-            full_name=f"{class_name}.{func.__name__}", 
-            func= wrapper,
+            class_name=class_name,
+            module_name=module_name,
+            full_name=full_name,
+            func=wrapper,
             is_regular_function=is_regular_function
         )
         if job not in JobRegistry.jobs:
             JobRegistry.jobs.add(job)
-        
+        breakpoint()
         return wrapper
     return decorator
