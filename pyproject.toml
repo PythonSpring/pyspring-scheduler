@@ -1,7 +1,7 @@
 [project]
 name = "py_spring_scheduler"
 version = "0.0.1"
-description = "Default template for PDM package"
+description = "A Python implementation of Spring's scheduler functionality, providing task scheduling capabilities similar to Spring's @Scheduled annotation"
 authors = [
     {name = "William Chen", email = "ow6201231@gmail.com"},
 ]
