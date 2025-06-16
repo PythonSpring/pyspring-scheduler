@@ -1,4 +1,5 @@
 from ._schedule import Scheduled
+from .pyspring_scheduler_provider import provide_scheduler
 from apscheduler.triggers.interval import IntervalTrigger
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.date import DateTrigger
