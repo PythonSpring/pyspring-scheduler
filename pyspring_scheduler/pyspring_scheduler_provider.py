@@ -1,7 +1,9 @@
 from functools import partial
-from loguru import logger
-from py_spring_core import EntityProvider, Properties, Component
+
 from apscheduler.schedulers.background import BackgroundScheduler
+from loguru import logger
+from py_spring_core import Component, EntityProvider, Properties
+
 from pyspring_scheduler._schedule import JobRegistry, ScheduledJob
 
 
@@ -13,10 +15,11 @@ class SchedulerProperties(Properties):
         timezone: Timezone used for all jobs and triggers.
         coalesce: If the scheduler was down and multiple runs were missed, it will run them all upon resume.
     """
-    __key__ = 'scheduler'
+
+    __key__ = "scheduler"
     number_of_workers: int = 20
     max_instances: int = 3
-    timezone: str = 'UTC'
+    timezone: str = "UTC"
     coalesce: bool = False
 
 
@@ -26,17 +29,19 @@ class PySpringSchedulerProvider(Component, EntityProvider):
         props = self.app_context.get_properties(SchedulerProperties)
         assert props is not None
         return props
-    
+
     def _create_scheduler(self, props: SchedulerProperties) -> BackgroundScheduler:
-        return BackgroundScheduler({
-            'apscheduler.executors.default': {
-                'class': 'apscheduler.executors.pool:ThreadPoolExecutor',
-                'max_workers': props.number_of_workers
-            },
-            'apscheduler.job_defaults.coalesce': props.coalesce,
-            'apscheduler.job_defaults.max_instances': props.max_instances,
-            'apscheduler.timezone': props.timezone,
-        })
+        return BackgroundScheduler(
+            {
+                "apscheduler.executors.default": {
+                    "class": "apscheduler.executors.pool:ThreadPoolExecutor",
+                    "max_workers": props.number_of_workers,
+                },
+                "apscheduler.job_defaults.coalesce": props.coalesce,
+                "apscheduler.job_defaults.max_instances": props.max_instances,
+                "apscheduler.timezone": props.timezone,
+            }
+        )
 
     def provider_init(self) -> None:
         assert self.app_context is not None
@@ -47,25 +52,22 @@ class PySpringSchedulerProvider(Component, EntityProvider):
         logger.info("Scheduler created...")
 
         self.component_instance_map = {
-            component.get_name(): component 
+            component.get_name(): component
             for component in self.app_context.get_singleton_component_instances()
         }
 
         for job in JobRegistry.jobs:
             self.bind_job(job)
 
-
         self.scheduler.start()
         logger.info("Scheduler initialized")
-
-        
 
     def bind_job(self, job: ScheduledJob) -> None:
         logger.info(f"Binding job {job.full_name} with trigger {job.trigger}")
         instance = self.component_instance_map.get(job.class_name)
         if not job.is_regular_function and instance is None:
             raise ValueError(f"Component {job.class_name} not found")
-        
+
         if job.is_regular_function:
             job_func = job.func
         else:
@@ -75,8 +77,4 @@ class PySpringSchedulerProvider(Component, EntityProvider):
 
 
 def provide_scheduler() -> EntityProvider:
-    return PySpringSchedulerProvider(
-        properties_classes=[
-            SchedulerProperties
-        ]
-    )
+    return PySpringSchedulerProvider(properties_classes=[SchedulerProperties])
