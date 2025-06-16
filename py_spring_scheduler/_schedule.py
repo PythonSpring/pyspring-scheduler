@@ -1,5 +1,7 @@
 from functools import wraps
 from typing import Any, Callable
+import inspect
+import os
 
 from apscheduler.triggers.base import BaseTrigger
 from loguru import logger
@@ -7,10 +9,10 @@ from pydantic import BaseModel, ConfigDict
 
 
 class ScheduledJob(BaseModel):
-    model_config = ConfigDict(arbitrary_types_allowed=True)
+    model_config = ConfigDict(arbitrary_types_allowed=True, frozen=True)
     trigger: BaseTrigger
     class_name: str
-    module_name: str
+    file_path: str
     full_name: str
     func: Callable[..., Any]
     is_regular_function: bool
@@ -42,18 +44,19 @@ def Scheduled(trigger: BaseTrigger) -> Callable[[Callable], Callable]:
             class_name = func_repr[0]
             is_regular_function = False
 
-        module_name = func.__module__
+        # Get the file path of the function
+        file_path = os.path.abspath(inspect.getfile(func))
         full_name = (
-            f"{module_name}.{class_name}.{func.__name__}"
+            f"{file_path}:{class_name}.{func.__name__}"
             if class_name
-            else f"{module_name}.{func.__name__}"
+            else f"{file_path}:{func.__name__}"
         )
 
         logger.info(f"Scheduling job {full_name} with trigger {trigger}")
         job = ScheduledJob(
             trigger=trigger,
             class_name=class_name,
-            module_name=module_name,
+            file_path=file_path,
             full_name=full_name,
             func=wrapper,
             is_regular_function=is_regular_function,
