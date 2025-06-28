@@ -2,7 +2,12 @@ from functools import partial
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from loguru import logger
-from py_spring_core import Component, EntityProvider, Properties, ApplicationContextRequired
+from py_spring_core import (
+    Component,
+    EntityProvider,
+    Properties,
+    ApplicationContextRequired,
+)
 
 from py_spring_scheduler._schedule import JobRegistry, ScheduledJob
 
