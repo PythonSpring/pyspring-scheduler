@@ -2,7 +2,7 @@ from functools import partial
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from loguru import logger
-from py_spring_core import Component, EntityProvider, Properties
+from py_spring_core import Component, EntityProvider, Properties, ApplicationContextRequired
 
 from py_spring_scheduler._schedule import JobRegistry, ScheduledJob
 
@@ -23,10 +23,10 @@ class SchedulerProperties(Properties):
     coalesce: bool = False
 
 
-class PySpringSchedulerProvider(Component, EntityProvider):
+class PySpringSchedulerProvider(Component, EntityProvider, ApplicationContextRequired):
     def _get_scheduler_properties(self) -> SchedulerProperties:
-        assert self.app_context is not None
-        props = self.app_context.get_properties(SchedulerProperties)
+        app_context = self.get_application_context()
+        props = app_context.get_properties(SchedulerProperties)
         assert props is not None
         return props
 
@@ -44,7 +44,7 @@ class PySpringSchedulerProvider(Component, EntityProvider):
         )
 
     def provider_init(self) -> None:
-        assert self.app_context is not None
+        app_context = self.get_application_context()
         logger.info("Initializing scheduler...")
         props = self._get_scheduler_properties()
         logger.info(f"Scheduler properties: {props.model_dump_json()}")
@@ -53,7 +53,7 @@ class PySpringSchedulerProvider(Component, EntityProvider):
 
         self.component_instance_map = {
             component.get_name(): component
-            for component in self.app_context.get_singleton_component_instances()
+            for component in app_context.get_singleton_component_instances()
         }
 
         for job in JobRegistry.jobs:
