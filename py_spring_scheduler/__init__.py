@@ -5,12 +5,18 @@ from apscheduler.triggers.date import DateTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
 from ._schedule import Scheduled
-from .pyspring_scheduler_provider import provide_scheduler
+from .pyspring_scheduler_starter import (
+    PySpringSchedulerStarter,
+    SchedulerProperties,
+    provide_scheduler,
+)
 
 
 __all__ = [
     "Scheduled",
     "provide_scheduler",
+    "PySpringSchedulerStarter",
+    "SchedulerProperties",
     "CalendarIntervalTrigger",
     "AndTrigger",
     "OrTrigger",
@@ -19,4 +25,4 @@ __all__ = [
     "IntervalTrigger",
 ]
 
-__version__ = "0.0.1"
+__version__ = "0.1.0"

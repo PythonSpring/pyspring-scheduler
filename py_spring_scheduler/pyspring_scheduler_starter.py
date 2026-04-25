@@ -2,12 +2,7 @@ from functools import partial
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from loguru import logger
-from py_spring_core import (
-    Component,
-    EntityProvider,
-    Properties,
-    ApplicationContextRequired,
-)
+from py_spring_core import Properties, PySpringStarter
 
 from py_spring_scheduler._schedule import JobRegistry, ScheduledJob
 
@@ -28,12 +23,9 @@ class SchedulerProperties(Properties):
     coalesce: bool = False
 
 
-class PySpringSchedulerProvider(Component, EntityProvider, ApplicationContextRequired):
-    def _get_scheduler_properties(self) -> SchedulerProperties:
-        app_context = self.get_application_context()
-        props = app_context.get_properties(SchedulerProperties)
-        assert props is not None
-        return props
+class PySpringSchedulerStarter(PySpringStarter):
+    def on_configure(self) -> None:
+        self.properties_classes.append(SchedulerProperties)
 
     def _create_scheduler(self, props: SchedulerProperties) -> BackgroundScheduler:
         return BackgroundScheduler(
@@ -48,17 +40,19 @@ class PySpringSchedulerProvider(Component, EntityProvider, ApplicationContextReq
             }
         )
 
-    def provider_init(self) -> None:
-        app_context = self.get_application_context()
+    def on_initialized(self) -> None:
+        assert self.app_context is not None, "ApplicationContext is not set"
         logger.info("Initializing scheduler...")
-        props = self._get_scheduler_properties()
+        props = self.app_context.get_properties(SchedulerProperties)
+        assert props is not None, "SchedulerProperties not found in ApplicationContext"
         logger.info(f"Scheduler properties: {props.model_dump_json()}")
+
         self.scheduler = self._create_scheduler(props)
         logger.info("Scheduler created...")
 
         self.component_instance_map = {
             component.get_name(): component
-            for component in app_context.get_singleton_component_instances()
+            for component in self.app_context.get_singleton_component_instances()
         }
 
         for job in JobRegistry.jobs:
@@ -81,5 +75,5 @@ class PySpringSchedulerProvider(Component, EntityProvider, ApplicationContextReq
         self.scheduler.add_job(job_func, job.trigger)
 
 
-def provide_scheduler() -> EntityProvider:
-    return PySpringSchedulerProvider(properties_classes=[SchedulerProperties])
+def provide_scheduler() -> PySpringSchedulerStarter:
+    return PySpringSchedulerStarter()

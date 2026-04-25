@@ -53,10 +53,10 @@ The scheduler can be configured through the application properties. Here's an ex
 
 ```python
 from py_spring_core import PySpringApplication
-from pyspring_scheduler.pyspring_scheduler_provider import provide_scheduler
+from py_spring_scheduler import provide_scheduler
 
 def main():
-    app = PySpringApplication("./app-config.json", entity_providers=[provide_scheduler()])
+    app = PySpringApplication("./app-config.json", starters=[provide_scheduler()])
     app.run()
 
 if __name__ == "__main__":
