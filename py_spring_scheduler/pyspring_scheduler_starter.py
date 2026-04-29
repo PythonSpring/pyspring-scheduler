@@ -55,7 +55,7 @@ class PySpringSchedulerStarter(PySpringStarter):
             for component in self.app_context.get_singleton_component_instances()
         }
 
-        for job in JobRegistry.jobs:
+        for job in JobRegistry.drain_jobs():
             self.bind_job(job)
 
         self.scheduler.start()

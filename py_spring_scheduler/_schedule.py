@@ -29,6 +29,12 @@ class ScheduledJob(BaseModel):
 class JobRegistry:
     jobs: set[ScheduledJob] = set()
 
+    @classmethod
+    def drain_jobs(cls) -> set[ScheduledJob]:
+        drained = cls.jobs
+        cls.jobs = set()
+        return drained
+
 
 def Scheduled(trigger: BaseTrigger) -> Callable[[Callable], Callable]:
     def decorator(func: Callable) -> Callable:
